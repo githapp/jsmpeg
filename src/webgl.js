@@ -5,6 +5,7 @@ var WebGLRenderer = function(options) {
 	this.width = this.canvas.width;
 	this.height = this.canvas.height;
 	this.enabled = true;
+    this.renderCallback = options.renderCallback || function() {};
 
 	var contextCreateOptions = {
 		preserveDrawingBuffer: !!options.preserveDrawingBuffer,
@@ -170,6 +171,10 @@ WebGLRenderer.prototype.render = function(y, cb, cr) {
 	this.updateTexture(gl.TEXTURE2, this.textureCr, w2, h2, cr);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    if (typeof this.renderCallback === 'function') {
+        this.renderCallback();
+    }
 };
 
 WebGLRenderer.prototype.updateTexture = function(unit, texture, w, h, data) {

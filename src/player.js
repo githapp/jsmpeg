@@ -245,6 +245,9 @@ Player.prototype.updateForStaticFile = function() {
 		else {
 			this.pause();
 		}
+        if (typeof this.options.endedCallback === 'function') {
+            this.options.endedCallback();
+        }
 	}
 };
 

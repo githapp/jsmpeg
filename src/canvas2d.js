@@ -5,6 +5,7 @@ var CanvasRenderer = function(options) {
 	this.width = this.canvas.width;
 	this.height = this.canvas.height;
 	this.enabled = true;
+    this.renderCallback = options.renderCallback || function() {};
 
 	this.context = this.canvas.getContext('2d');
 };
@@ -39,6 +40,10 @@ CanvasRenderer.prototype.renderProgress = function(progress) {
 CanvasRenderer.prototype.render = function(y, cb, cr) {
 	this.YCbCrToRGBA(y, cb, cr, this.imageData.data);
 	this.context.putImageData(this.imageData, 0, 0);
+    
+    if (typeof this.renderCallback === 'function') {
+        this.renderCallback();
+    }
 };
 
 CanvasRenderer.prototype.YCbCrToRGBA = function(y, cb, cr, rgba) {
