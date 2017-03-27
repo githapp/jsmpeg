@@ -7,6 +7,7 @@ var WebAudioOut = function(options) {
 
 	this.gain = this.context.createGain();
 	this.destination = this.gain;
+    this.source = null;
 
 	// Keep track of the number of connections to this AudioContext, so we
 	// can safely close() it when we're the only one connected to it.
@@ -57,9 +58,9 @@ WebAudioOut.prototype.play = function(sampleRate, left, right) {
 	buffer.getChannelData(0).set(left);
 	buffer.getChannelData(1).set(right);
 
-	var source = this.context.createBufferSource();
-	source.buffer = buffer;
-	source.connect(this.destination);
+	this.source = this.context.createBufferSource();
+	this.source.buffer = buffer;
+	this.source.connect(this.destination);
 
 	var now = this.context.currentTime;
 	var duration = buffer.duration;
@@ -68,7 +69,7 @@ WebAudioOut.prototype.play = function(sampleRate, left, right) {
 		this.wallclockStartTime = JSMpeg.Now();
 	}
 
-	source.start(this.startTime);
+	this.source.start(this.startTime);
 	this.startTime += duration;
 	this.wallclockStartTime += duration;
 };
@@ -79,6 +80,7 @@ WebAudioOut.prototype.stop = function() {
 	// list ourselfs would be a pain, so we just set the gain to 0
 	// to cut off all enqueued audio instantly.
 	this.gain.gain.value = 0;
+    this.source.stop();
 };
 
 WebAudioOut.prototype.getEnqueuedTime = function() {
@@ -104,10 +106,10 @@ WebAudioOut.prototype.unlock = function(callback) {
 	
 	// Create empty buffer and play it
 	var buffer = this.context.createBuffer(1, 1, 22050);
-	var source = this.context.createBufferSource();
-	source.buffer = buffer;
-	source.connect(this.destination);
-	source.start(0);
+	this.source = this.context.createBufferSource();
+	this.source.buffer = buffer;
+	this.source.connect(this.destination);
+	this.source.start(0);
 
 	setTimeout(this.checkIfUnlocked.bind(this, source, 0), 0);
 };
