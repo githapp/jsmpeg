@@ -21,7 +21,6 @@ var Player = function(url, options) {
 	}
 
 	this.maxAudioLag = options.maxAudioLag || 0.25;
-	this.loop = options.loop !== false;
 	this.autoplay = !!options.autoplay || options.streaming;
 
 	this.demuxer = new JSMpeg.Demuxer.TS(options);
@@ -52,11 +51,6 @@ var Player = function(url, options) {
 		set: this.setVolume
 	});
 
-	this.unpauseOnShow = false;
-	if (options.pauseWhenHidden !== false) {
-		document.addEventListener('visibilitychange', this.showHide.bind(this));
-	}
-
 	this.source.start();
 
 	if (this.autoplay) {
@@ -64,23 +58,12 @@ var Player = function(url, options) {
 	}
 };
 
-Player.prototype.showHide = function(ev) {
-	if (document.visibilityState === 'hidden') {
-		this.unpauseOnShow = this.wantsToPlay;
-		this.pause();
-	}
-	else if (this.unpauseOnShow) {
-		this.play();
-	}
-};
-
 Player.prototype.play = function(ev) {
-	this.animationId = requestAnimationFrame(this.update.bind(this));
-	this.wantsToPlay = true;
+    this.wantsToPlay = true;
+	this.update();
 };
 
 Player.prototype.pause = function(ev) {
-	cancelAnimationFrame(this.animationId);
 	this.wantsToPlay = false;
 	this.isPlaying = false;
 
@@ -143,7 +126,9 @@ Player.prototype.setCurrentTime = function(time) {
 };
 
 Player.prototype.update = function() {
-	this.animationId = requestAnimationFrame(this.update.bind(this));
+	if (this.wantsToPlay) {
+        requestAnimationFrame(this.update.bind(this));
+    }
 
 	if (!this.source.established) {
 		if (this.renderer) {
@@ -232,23 +217,16 @@ Player.prototype.updateForStaticFile = function() {
 		headroom = this.demuxer.currentTime - targetTime;
 	}
 
-	// Notify the source of the playhead headroom, so it can decide whether to
-	// continue loading further data.
-	this.source.resume(headroom);
-
-	// If we failed to decode and the source is complete, it means we reached
-	// the end of our data. We may want to loop.
 	if (notEnoughData && this.source.completed) {
-		if (this.loop) {
-			this.seek(0);
-		}
-		else {
-			this.pause();
-		}
+        this.pause();
         if (typeof this.options.endedCallback === 'function') {
             this.options.endedCallback();
         }
-	}
+	} else {
+        // Notify the source of the playhead headroom, so it can decide whether to
+        // continue loading further data.
+        this.source.resume(headroom);
+    }
 };
 
 return Player;

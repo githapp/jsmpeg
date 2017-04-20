@@ -80,7 +80,6 @@ WebAudioOut.prototype.stop = function() {
 	// list ourselfs would be a pain, so we just set the gain to 0
 	// to cut off all enqueued audio instantly.
 	this.gain.gain.value = 0;
-    this.source.stop();
 };
 
 WebAudioOut.prototype.getEnqueuedTime = function() {
