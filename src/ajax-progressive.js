@@ -17,6 +17,7 @@ var AjaxProgressiveSource = function(url, options) {
 	this.loadStartTime = 0;
 	this.throttled = options.throttled !== false;
 	this.aborted = false;
+    this.onChunkLoaded = options.chunkLoaded || function() {};
 };
 
 AjaxProgressiveSource.prototype.connect = function(destination) {
@@ -31,6 +32,7 @@ AjaxProgressiveSource.prototype.start = function() {
 			this.fileSize = parseInt(
 				this.request.getResponseHeader("Content-Length")
 			);
+            this.onChunkLoaded();
 			this.loadNextChunk();
 		}
 	}.bind(this);
@@ -101,6 +103,8 @@ AjaxProgressiveSource.prototype.onProgress = function(ev) {
 };
 
 AjaxProgressiveSource.prototype.onChunkLoad = function(data) {
+    this.onChunkLoaded();
+    
 	this.established = true;
 	this.progress = 1;
 	this.loadedSize += data.byteLength;

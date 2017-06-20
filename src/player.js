@@ -2,6 +2,7 @@ JSMpeg.Player = (function(){ "use strict";
 
 var Player = function(url, options) {
 	this.options = options || {};
+    this.canPlay = false;
 
 	if (options.source) {
 		this.source = new options.source(url, options);
@@ -12,6 +13,7 @@ var Player = function(url, options) {
 		options.streaming = true;
 	}
 	else if (options.progressive !== false) {
+        options.chunkLoaded = this.chunkLoaded.bind(this);
 		this.source = new JSMpeg.Source.AjaxProgressive(url, options);
 		options.streaming = false;
 	}
@@ -20,6 +22,10 @@ var Player = function(url, options) {
 		options.streaming = false;
 	}
 
+    if (typeof this.options.canPlayCallback !== 'function') {
+        this.options.canPlayCallback = function() {};
+    }
+    
 	this.maxAudioLag = options.maxAudioLag || 0.25;
 	this.autoplay = !!options.autoplay || options.streaming;
 
@@ -56,6 +62,15 @@ var Player = function(url, options) {
 	if (this.autoplay) {
 		this.play();
 	}
+};
+
+Player.prototype.chunkLoaded = function() {
+    if (!this.isPlaying && !this.canPlay) {
+        this.canPlay = true;
+        this.options.canPlayCallback();
+    } else if(this.wantsToPlay && !this.isPlaying) {
+        this.options.canPlayCallback();
+    }
 };
 
 Player.prototype.play = function(ev) {
