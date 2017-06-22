@@ -67,8 +67,11 @@ var Player = function(url, options) {
 Player.prototype.chunkLoaded = function() {
     if (!this.isPlaying && !this.canPlay) {
         this.canPlay = true;
+        this.video.decode();
         this.options.canPlayCallback();
     } else if(this.wantsToPlay && !this.isPlaying) {
+        this.canPlay = true;
+        this.video.decode();
         this.options.canPlayCallback();
     }
 };

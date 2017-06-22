@@ -32,7 +32,6 @@ AjaxProgressiveSource.prototype.start = function() {
 			this.fileSize = parseInt(
 				this.request.getResponseHeader("Content-Length")
 			);
-            this.onChunkLoaded();
 			this.loadNextChunk();
 		}
 	}.bind(this);
